@@ -71,14 +71,10 @@ drawBarcode config str start@(_ :+ y) =
                                 return corner2
 
 -- | Generate PDF data containing the barcode for a given string, with
--- the tightest possible bounding box. If the string cannot be encoded
--- in Code 128, an IOError is thrown.
-barcodePDF :: BarcodeConfig -> String -> IO ByteString
-barcodePDF config str =
-  case barcodeSize config str of
-    Left err     -> fail (show err)
-    Right (w, h) ->
-      pdfByteString standardDocInfo { compressed = False}
+-- the tightest possible bounding box.
+barcodePDF :: BarcodeConfig -> String -> Either Err ByteString
+barcodePDF config str = mkPdf <$> barcodeSize config str
+  where mkPdf (w,h) = pdfByteString standardDocInfo { compressed = False}
                     (PDFRect 0 0 (ceiling w) (ceiling h)) $ do
                       p <- addPage Nothing
                       drawWithPage p $ do
